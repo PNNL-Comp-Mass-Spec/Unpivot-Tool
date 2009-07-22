@@ -1,0 +1,36 @@
+Protein	Header	Value
+A	Peptide	RRR
+A	Condition1	1
+A	Condition2	2
+A	Condition3	3
+A	Condition4	4
+B	Peptide	SSS
+B	Condition1	5
+B	Condition2	6
+B	Condition3	7
+B	Condition4	8
+C	Peptide	TTT
+C	Condition1	9
+C	Condition2	Null
+C	Condition3	11
+C	Condition4	12
+D	Peptide	UUU
+D	Condition1	13
+D	Condition2	14
+D	Condition3	15
+D	Condition4	16
+E	Peptide	VVV
+E	Condition1	17
+E	Condition2	
+E	Condition3	18
+E	Condition4	19
+F	Peptide	WWW
+F	Condition1	20
+F	Condition2	21
+F	Condition3	
+F	Condition4	22
+G	Peptide	XXX
+G	Condition1	23
+G	Condition2	24
+G	Condition3	25
+G	Condition4	
