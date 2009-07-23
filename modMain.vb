@@ -284,7 +284,8 @@ Public Module modMain
                               "this computer software.")
             Console.WriteLine()
 
-
+            ' Delay for 750 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
+            System.Threading.Thread.Sleep(750)
 
         Catch ex As Exception
             Console.WriteLine("Error displaying the program syntax: " & ex.Message)

@@ -110,6 +110,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -306,14 +314,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:UnpivotTool"
-        "ProductCode" = "8:{9012B997-9883-4B0A-B074-3CB8546566FE}"
-        "PackageCode" = "8:{A137FFF9-DB71-4D09-95C1-72555ABD3732}"
+        "ProductCode" = "8:{8494272F-1E69-41C9-9823-B225BB3AFE46}"
+        "PackageCode" = "8:{1EAEECE9-02A8-4571-BFEB-300EADD48567}"
         "UpgradeCode" = "8:{05D95429-3BB3-44A2-AA85-700BD8BDABE3}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.0.1"
         "Manufacturer" = "8:Pacific Northwest National Laboratory"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

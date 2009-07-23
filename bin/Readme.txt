@@ -1,6 +1,7 @@
+Unpivot Tool
 
-This program reads in a delimited text file that is in crosstab (aka pivot table) format 
-and writes out a new file where the data has been unpivotted.
+This program reads in a delimited text file that is in crosstab (aka pivot table) 
+format and writes out a new file where the data has been unpivotted.
 
 Example syntax:
 UnpivotTable.exe /I:ExamplePivotTable.txt /F:2 /B /N
