@@ -29,7 +29,7 @@ Option Strict On
 
 Public Module modMain
 
-    Public Const PROGRAM_DATE As String = "July 22, 2009"
+    Public Const PROGRAM_DATE As String = "July 23, 2009"
 
     Private mInputFilePath As String
     Private mOutputFolderName As String             ' Optional
@@ -84,6 +84,9 @@ Public Module modMain
         mTabDelimitedFile = True
         mColumnSepChar = ControlChars.Tab
 
+        mOutputFolderAlternatePath = String.Empty
+        mRecreateFolderHierarchyInAlternatePath = False
+
         mRecurseFolders = False
         mRecurseFoldersMaxLevels = 0
 
@@ -96,7 +99,7 @@ Public Module modMain
                 If SetOptionsUsingCommandLineParameters(objParseCommandLine) Then blnProceed = True
             End If
 
-            If Not blnProceed OrElse objParseCommandLine.NeedToShowHelp OrElse mInputFilePath.Length = 0 OrElse mInputFilePath.Length = 0 Then
+            If Not blnProceed OrElse objParseCommandLine.NeedToShowHelp OrElse mInputFilePath.Length = 0 Then
                 ShowProgramHelp()
                 intReturnCode = -1
             Else

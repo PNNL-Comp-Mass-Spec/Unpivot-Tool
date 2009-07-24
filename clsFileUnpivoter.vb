@@ -30,7 +30,7 @@ Public Class clsFileUnpivoter
     Inherits clsProcessFilesBaseClass
 
     Public Sub New()
-        MyBase.mFileDate = "July 22, 2009"
+        MyBase.mFileDate = PROGRAM_DATE
         InitializeLocalVariables()
     End Sub
 
@@ -267,7 +267,7 @@ Public Class clsFileUnpivoter
 
         Try
             If strInputFilePath Is Nothing OrElse strInputFilePath.Length = 0 Then
-                ShowMessage("Input file name is empty")
+                ShowErrorMessage("Input file name is empty")
                 MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.InvalidInputFilePath)
             Else
                 ' Note that CleanupFilePaths() will update mOutputFolderPath, which is used by LogMessage()

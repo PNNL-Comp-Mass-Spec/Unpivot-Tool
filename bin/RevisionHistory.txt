@@ -1,4 +1,7 @@
 Unpivot Tool
 
-Version 1.0.3490; July 22,2009
+Version 1.0.3491; July 23, 2009
+	- Minor code fixes
+	
+Version 1.0.3490; July 22, 2009
 	- Initial verion
