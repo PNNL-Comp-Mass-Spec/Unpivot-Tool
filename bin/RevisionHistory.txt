@@ -1,5 +1,8 @@
 Unpivot Tool
 
+Version 1.0.5561; March 24, 2015
+	- Updated to .NET 4
+
 Version 1.0.3491; July 23, 2009
 	- Minor code fixes
 	

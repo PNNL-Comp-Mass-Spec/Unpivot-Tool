@@ -119,7 +119,6 @@ Public Class clsFileUnpivoter
     End Sub
 
     Private Function DetermineLineTerminatorSize(ByVal strInputFilePath As String) As Integer
-        Dim fsInFile As System.IO.FileStream
         Dim intByte As Integer
 
         Dim intTerminatorSize As Integer = 2
@@ -128,37 +127,35 @@ Public Class clsFileUnpivoter
             ' Open the input file and look for the first carriage return (byte code 13) or line feed (byte code 10)
             ' Examining, at most, the first 100000 bytes
 
-            fsInFile = New System.IO.FileStream(strInputFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, IO.FileShare.ReadWrite)
+            Using fsInFile = New System.IO.FileStream(strInputFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, IO.FileShare.ReadWrite)
 
-            Do While fsInFile.Position < fsInFile.Length AndAlso fsInFile.Position < 100000
+                Do While fsInFile.Position < fsInFile.Length AndAlso fsInFile.Position < 100000
 
-                intByte = fsInFile.ReadByte()
+                    intByte = fsInFile.ReadByte()
 
-                If intByte = 10 Or intByte = 13 Then
-                    ' Found linefeed or carriage return
-                    If fsInFile.Position < fsInFile.Length Then
-                        intByte = fsInFile.ReadByte()
-                        If intByte = 10 Or intByte = 13 Then
-                            ' CrLf or LfCr
-                            intTerminatorSize = 2
+                    If intByte = 10 Or intByte = 13 Then
+                        ' Found linefeed or carriage return
+                        If fsInFile.Position < fsInFile.Length Then
+                            intByte = fsInFile.ReadByte()
+                            If intByte = 10 Or intByte = 13 Then
+                                ' CrLf or LfCr
+                                intTerminatorSize = 2
+                            Else
+                                ' Lf only or Cr only
+                                intTerminatorSize = 1
+                            End If
                         Else
-                            ' Lf only or Cr only
                             intTerminatorSize = 1
                         End If
-                    Else
-                        intTerminatorSize = 1
+                        Exit Do
                     End If
-                    Exit Do
-                End If
 
-            Loop
+                Loop
+
+            End Using
 
         Catch ex As Exception
             HandleException("Error in DetermineLineTerminatorSize", ex)
-        Finally
-            If Not fsInFile Is Nothing Then
-                fsInFile.Close()
-            End If
         End Try
 
         Return intTerminatorSize
@@ -189,7 +186,7 @@ Public Class clsFileUnpivoter
     End Function
 
     Private Sub InitializeLocalVariables()
-        MyBase.ShowMessages = False
+        MyBase.ShowMessages = True
 
         mFixedColumnCount = 1
         mSkipBlankItems = True

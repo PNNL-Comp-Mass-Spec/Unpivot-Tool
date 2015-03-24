@@ -29,7 +29,7 @@ Option Strict On
 
 Public Module modMain
 
-    Public Const PROGRAM_DATE As String = "July 23, 2009"
+    Public Const PROGRAM_DATE As String = "March 24, 2015"
 
     Private mInputFilePath As String
     Private mOutputFolderName As String             ' Optional
@@ -306,17 +306,17 @@ Public Module modMain
             End If
             DisplayProgressPercent(mLastProgressReportValue, False)
             mLastProgressReportValue += PERCENT_REPORT_INTERVAL
-            mLastProgressReportTime = DateTime.Now
+            mLastProgressReportTime = DateTime.UtcNow
         Else
-            If DateTime.Now.Subtract(mLastProgressReportTime).TotalMilliseconds > PROGRESS_DOT_INTERVAL_MSEC Then
-                mLastProgressReportTime = DateTime.Now
+            If DateTime.UtcNow.Subtract(mLastProgressReportTime).TotalMilliseconds > PROGRESS_DOT_INTERVAL_MSEC Then
+                mLastProgressReportTime = DateTime.UtcNow
                 Console.Write(".")
             End If
         End If
     End Sub
 
     Private Sub mUnpivoter_ProgressReset() Handles mUnpivoter.ProgressReset
-        mLastProgressReportTime = DateTime.Now
+        mLastProgressReportTime = DateTime.UtcNow
         mLastProgressReportValue = 0
     End Sub
 End Module

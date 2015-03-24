@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "UnpivotTool", "UnpivotTool.vbproj", "{64C59933-9E50-42E4-987B-4EB156F92357}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "UnpivotTool_Installer", "UnpivotTool_Installer\UnpivotTool_Installer.vdproj", "{2C576441-3296-4CB3-86F0-1F3D19FFA5F4}"
