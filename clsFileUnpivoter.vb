@@ -124,34 +124,33 @@ Public Class FileUnpivoter
         MyBase.AbortProcessingNow()
     End Sub
 
-    Private Function DetermineLineTerminatorSize(strInputFilePath As String) As Integer
-        Dim intByte As Integer
+    Private Function DetermineLineTerminatorSize(inputFilePath As String) As Integer
 
-        Dim intTerminatorSize = 2
+        Dim terminatorSize = 2
 
         Try
             ' Open the input file and look for the first carriage return (byte code 13) or line feed (byte code 10)
             ' Examining, at most, the first 100000 bytes
 
-            Using fsInFile = New FileStream(strInputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            Using reader = New FileStream(inputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
 
-                Do While fsInFile.Position < fsInFile.Length AndAlso fsInFile.Position < 100000
+                Do While reader.Position < reader.Length AndAlso reader.Position < 100000
 
-                    intByte = fsInFile.ReadByte()
+                    Dim oneByte = reader.ReadByte()
 
-                    If intByte = 10 Or intByte = 13 Then
+                    If oneByte = 10 Or oneByte = 13 Then
                         ' Found linefeed or carriage return
-                        If fsInFile.Position < fsInFile.Length Then
-                            intByte = fsInFile.ReadByte()
-                            If intByte = 10 Or intByte = 13 Then
+                        If reader.Position < reader.Length Then
+                            oneByte = reader.ReadByte()
+                            If oneByte = 10 Or oneByte = 13 Then
                                 ' CrLf or LfCr
-                                intTerminatorSize = 2
+                                terminatorSize = 2
                             Else
                                 ' Lf only or Cr only
-                                intTerminatorSize = 1
+                                terminatorSize = 1
                             End If
                         Else
-                            intTerminatorSize = 1
+                            terminatorSize = 1
                         End If
                         Exit Do
                     End If
@@ -164,31 +163,31 @@ Public Class FileUnpivoter
             HandleException("Error in DetermineLineTerminatorSize", ex)
         End Try
 
-        Return intTerminatorSize
+        Return terminatorSize
 
     End Function
 
     Public Overrides Function GetErrorMessage() As String
         ' Returns "" if no error
 
-        Dim strErrorMessage As String
+        Dim message As String
 
         If MyBase.ErrorCode = ProcessFilesErrorCodes.LocalizedError Or
            MyBase.ErrorCode = ProcessFilesErrorCodes.NoError Then
             Select Case mLocalErrorCode
                 Case FileUnpivoterErrorCodes.NoError
-                    strErrorMessage = ""
+                    message = ""
                 Case FileUnpivoterErrorCodes.UnspecifiedError
-                    strErrorMessage = "Unspecified localized error"
+                    message = "Unspecified localized error"
                 Case Else
                     ' This shouldn't happen
-                    strErrorMessage = "Unknown error state"
+                    message = "Unknown error state"
             End Select
         Else
-            strErrorMessage = MyBase.GetBaseClassErrorMessage()
+            message = MyBase.GetBaseClassErrorMessage()
         End If
 
-        Return strErrorMessage
+        Return message
     End Function
 
     Private Sub InitializeLocalVariables()
@@ -204,35 +203,35 @@ Public Class FileUnpivoter
 
     End Sub
 
-    Private Function LoadParameterFileSettings(strParameterFilePath As String) As Boolean
+    Private Function LoadParameterFileSettings(parameterFilePath As String) As Boolean
 
         Const OPTIONS_SECTION = "FileUnpivoter"
 
-        Dim objSettingsFile As New XmlSettingsFileAccessor
+        Dim settingsFile As New XmlSettingsFileAccessor()
 
         Try
 
-            If strParameterFilePath Is Nothing OrElse strParameterFilePath.Length = 0 Then
+            If parameterFilePath Is Nothing OrElse parameterFilePath.Length = 0 Then
                 ' No parameter file specified; nothing to load
                 Return True
             End If
 
-            If Not File.Exists(strParameterFilePath) Then
-                ' See if strParameterFilePath points to a file in the same directory as the application
-                strParameterFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.GetFileName(strParameterFilePath))
-                If Not File.Exists(strParameterFilePath) Then
+            If Not File.Exists(parameterFilePath) Then
+                ' See if parameterFilePath points to a file in the same directory as the application
+                parameterFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.GetFileName(parameterFilePath))
+                If Not File.Exists(parameterFilePath) Then
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.ParameterFileNotFound)
                     Return False
                 End If
             End If
 
-            If objSettingsFile.LoadSettings(strParameterFilePath) Then
-                If Not objSettingsFile.SectionPresent(OPTIONS_SECTION) Then
-                    ShowErrorMessage("The node '<section name=""" & OPTIONS_SECTION & """> was not found in the parameter file: " & strParameterFilePath)
+            If settingsFile.LoadSettings(parameterFilePath) Then
+                If Not settingsFile.SectionPresent(OPTIONS_SECTION) Then
+                    ShowErrorMessage("The node '<section name=""" & OPTIONS_SECTION & """> was not found in the parameter file: " & parameterFilePath)
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidParameterFile)
                     Return False
                 Else
-                    ' mMySetting = objSettingsFile.GetParam(OPTIONS_SECTION, "MySetting", "Default value")
+                    ' mMySetting = settingsFile.GetParam(OPTIONS_SECTION, "MySetting", "Default value")
                 End If
             End If
 
@@ -246,19 +245,19 @@ Public Class FileUnpivoter
     End Function
 
     ' Main processing function
-    Public Overloads Overrides Function ProcessFile(strInputFilePath As String, strOutputFolderPath As String, strParameterFilePath As String, blnResetErrorCode As Boolean) As Boolean
+    Public Overloads Overrides Function ProcessFile(inputFilePath As String, outputFolderPath As String, parameterFilePath As String, resetErrorCode As Boolean) As Boolean
         ' Returns True if success, False if failure
 
-        Dim strStatusMessage As String
-        Dim blnSuccess As Boolean
+        Dim statusMessage As String
+        Dim success As Boolean
 
-        If blnResetErrorCode Then
+        If resetErrorCode Then
             SetLocalErrorCode(FileUnpivoterErrorCodes.NoError)
         End If
 
-        If Not LoadParameterFileSettings(strParameterFilePath) Then
-            strStatusMessage = "Parameter file load error: " & strParameterFilePath
-            ShowErrorMessage(strStatusMessage)
+        If Not LoadParameterFileSettings(parameterFilePath) Then
+            statusMessage = "Parameter file load error: " & parameterFilePath
+            ShowErrorMessage(statusMessage)
 
             If MyBase.ErrorCode = ProcessFilesErrorCodes.NoError Then
                 MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidParameterFile)
@@ -267,22 +266,22 @@ Public Class FileUnpivoter
         End If
 
         Try
-            If strInputFilePath Is Nothing OrElse strInputFilePath.Length = 0 Then
+            If inputFilePath Is Nothing OrElse inputFilePath.Length = 0 Then
                 ShowErrorMessage("Input file name is empty")
                 MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidInputFilePath)
             Else
                 ' Note that CleanupFilePaths() will update mOutputFolderPath, which is used by LogMessage()
-                If Not CleanupFilePaths(strInputFilePath, strOutputFolderPath) Then
+                If Not CleanupFilePaths(inputFilePath, outputFolderPath) Then
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.FilePathError)
                 Else
-                    MyBase.UpdateProgress("Parsing " & Path.GetFileName(strInputFilePath))
+                    MyBase.UpdateProgress("Parsing " & Path.GetFileName(inputFilePath))
                     LogMessage(MyBase.ProgressStepDescription)
                     MyBase.ResetProgress()
 
                     ' Call UnpivotFile to perform the work
-                    blnSuccess = UnpivotFile(strInputFilePath, strOutputFolderPath)
+                    success = UnpivotFile(inputFilePath, outputFolderPath)
 
-                    If blnSuccess Then
+                    If success Then
                         LogMessage("Processing Complete")
                         OperationComplete()
                     End If
@@ -291,10 +290,10 @@ Public Class FileUnpivoter
 
         Catch ex As Exception
             HandleException("Error in ProcessFile", ex)
-            blnSuccess = False
+            success = False
         End Try
 
-        Return blnSuccess
+        Return success
 
     End Function
 
@@ -302,9 +301,9 @@ Public Class FileUnpivoter
         SetLocalErrorCode(eNewErrorCode, False)
     End Sub
 
-    Private Sub SetLocalErrorCode(eNewErrorCode As FileUnpivoterErrorCodes, blnLeaveExistingErrorCodeUnchanged As Boolean)
+    Private Sub SetLocalErrorCode(eNewErrorCode As FileUnpivoterErrorCodes, leaveExistingErrorCodeUnchanged As Boolean)
 
-        If blnLeaveExistingErrorCodeUnchanged AndAlso mLocalErrorCode <> FileUnpivoterErrorCodes.NoError Then
+        If leaveExistingErrorCodeUnchanged AndAlso mLocalErrorCode <> FileUnpivoterErrorCodes.NoError Then
             ' An error code is already defined; do not change it
         Else
             mLocalErrorCode = eNewErrorCode
@@ -320,57 +319,57 @@ Public Class FileUnpivoter
 
     End Sub
 
-    Protected Function UnpivotFile(strInputFilePath As String, strOutputFolderPath As String) As Boolean
+    Protected Function UnpivotFile(inputFilePath As String, outputFolderPath As String) As Boolean
 
-        Dim srInFile As StreamReader
-        Dim swOutFile As StreamWriter
+        Dim reader As StreamReader
+        Dim writer As StreamWriter
 
-        Dim strOutputFilePath As String
-        Dim strSepCharDescription As String
+        Dim outputFilePath As String
+        Dim sepCharDescription As String
 
-        Dim intLineTerminatorBytes As Integer
-        Dim intLinesRead As Integer
-        Dim lngBytesRead As Long
-        Dim sngPercentComplete As Single
+        Dim lineTerminatorBytes As Integer
+        Dim linesRead As Integer
+        Dim bytesRead As Long
+        Dim percentComplete As Single
 
-        Dim strLineIn As String
-        Dim strLineOut As String
+        Dim lineIn As String
+        Dim lineOut As String
 
-        Dim strSplitLine() As String
+        Dim splitLine() As String
 
-        Dim intHeaderColumnCount As Integer
-        Dim strHeaderColumnNames() As String
+        Dim headerColumnCount As Integer
+        Dim headerColumnNames() As String
 
-        Dim intIndex As Integer
+        Dim index As Integer
 
-        Dim blnHeaderProcessed As Boolean
-        Dim blnSkipValue As Boolean
-        Dim blnSuccess As Boolean
+        Dim headerProcessed As Boolean
+        Dim skipValue As Boolean
+        Dim success As Boolean
 
         Try
-            strOutputFilePath = Path.GetFileNameWithoutExtension(strInputFilePath) & "_Unpivot" & Path.GetExtension(strInputFilePath)
+            outputFilePath = Path.GetFileNameWithoutExtension(inputFilePath) & "_Unpivot" & Path.GetExtension(inputFilePath)
 
-            If strOutputFolderPath Is Nothing OrElse strOutputFolderPath.Length = 0 Then
-                strOutputFilePath = Path.Combine(Path.GetDirectoryName(strInputFilePath), strOutputFilePath)
+            If outputFolderPath Is Nothing OrElse outputFolderPath.Length = 0 Then
+                outputFilePath = Path.Combine(Path.GetDirectoryName(inputFilePath), outputFilePath)
             Else
-                strOutputFilePath = Path.Combine(strOutputFolderPath, strOutputFilePath)
+                outputFilePath = Path.Combine(outputFolderPath, outputFilePath)
             End If
 
             Try
                 ' Open the input file
-                srInFile = New StreamReader(New FileStream(strInputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                reader = New StreamReader(New FileStream(inputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
 
             Catch ex As Exception
-                HandleException("Error opening input file: " & strInputFilePath, ex)
+                HandleException("Error opening input file: " & inputFilePath, ex)
                 Return False
             End Try
 
             Try
                 ' Create the output file; it will be overwritten if it exists
-                swOutFile = New StreamWriter(New FileStream(strOutputFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                writer = New StreamWriter(New FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
 
             Catch ex As Exception
-                HandleException("Error creating the output file: " & strOutputFilePath, ex)
+                HandleException("Error creating the output file: " & outputFilePath, ex)
                 Return False
             End Try
 
@@ -379,83 +378,83 @@ Public Class FileUnpivoter
 
             ' Define the column sep char description
             If mColumnSepChar = ControlChars.Tab Then
-                strSepCharDescription = "<tab>"
+                sepCharDescription = "<tab>"
             Else
-                strSepCharDescription = "'" & mColumnSepChar & "'"
+                sepCharDescription = "'" & mColumnSepChar & "'"
             End If
 
             ' Initialize the tracking variables
-            ReDim strHeaderColumnNames(0)
-            intLinesRead = 0
-            blnHeaderProcessed = False
+            ReDim headerColumnNames(0)
+            linesRead = 0
+            headerProcessed = False
 
-            intLineTerminatorBytes = DetermineLineTerminatorSize(strInputFilePath)
+            lineTerminatorBytes = DetermineLineTerminatorSize(inputFilePath)
 
             ' Parse the input file and create the output file
-            Do While srInFile.Peek >= 0
-                strLineIn = srInFile.ReadLine()
-                intLinesRead += 1
+            Do While Not reader.EndOfStream
+                lineIn = reader.ReadLine()
+                linesRead += 1
 
-                If strLineIn Is Nothing OrElse strLineIn = String.Empty Then
+                If lineIn Is Nothing OrElse lineIn = String.Empty Then
                     ' Blank line; skip it
                 Else
-                    ' Bump up lngBytesRead
-                    lngBytesRead += strLineIn.Length + intLineTerminatorBytes
+                    ' Bump up bytesRead
+                    bytesRead += lineIn.Length + lineTerminatorBytes
 
                     ' Split the line on the separation char
-                    strSplitLine = strLineIn.Split(mColumnSepChar)
+                    splitLine = lineIn.Split(mColumnSepChar)
 
-                    If strSplitLine.Length = 0 OrElse Not strLineIn.Contains(mColumnSepChar) Then
-                        ShowMessage("Warning: line " & intLinesRead.ToString & " did not contain the separation character " & strSepCharDescription & "; this line will be skipped")
+                    If splitLine.Length = 0 OrElse Not lineIn.Contains(mColumnSepChar) Then
+                        ShowMessage("Warning: line " & linesRead.ToString & " did not contain the separation character " & sepCharDescription & "; this line will be skipped")
                     End If
 
                     ' Add the fixed column names to the output line (this is required on both the header line and subsequent lines)
-                    strLineOut = String.Empty
-                    For intIndex = 0 To mFixedColumnCount - 1
-                        If intIndex >= strSplitLine.Length Then
+                    lineOut = String.Empty
+                    For index = 0 To mFixedColumnCount - 1
+                        If index >= splitLine.Length Then
                             Exit For
                         End If
-                        strLineOut &= strSplitLine(intIndex) & mColumnSepChar
+                        lineOut &= splitLine(index) & mColumnSepChar
                     Next
 
-                    If Not blnHeaderProcessed Then
+                    If Not headerProcessed Then
                         ' Write out the header line
-                        swOutFile.WriteLine(strLineOut & "Header" & mColumnSepChar & "Value")
+                        writer.WriteLine(lineOut & "Header" & mColumnSepChar & "Value")
 
-                        ' Cache the Header names in strHeaderColumnNames
-                        intHeaderColumnCount = strSplitLine.Length - mFixedColumnCount - 1
-                        If intHeaderColumnCount < -1 Then intHeaderColumnCount = -1
-                        ReDim strHeaderColumnNames(intHeaderColumnCount)
+                        ' Cache the Header names in headerColumnNames
+                        headerColumnCount = splitLine.Length - mFixedColumnCount - 1
+                        If headerColumnCount < -1 Then headerColumnCount = -1
+                        ReDim headerColumnNames(headerColumnCount)
 
-                        For intIndex = mFixedColumnCount To strSplitLine.Length - 1
-                            strHeaderColumnNames(intIndex - mFixedColumnCount) = String.Copy(strSplitLine(intIndex))
+                        For index = mFixedColumnCount To splitLine.Length - 1
+                            headerColumnNames(index - mFixedColumnCount) = String.Copy(splitLine(index))
                         Next
 
-                        blnHeaderProcessed = True
+                        headerProcessed = True
                     Else
                         ' Unpivot this line, writing out to the output file
-                        For intIndex = mFixedColumnCount To strSplitLine.Length - 1
-                            If intIndex - mFixedColumnCount >= strHeaderColumnNames.Length Then
+                        For index = mFixedColumnCount To splitLine.Length - 1
+                            If index - mFixedColumnCount >= headerColumnNames.Length Then
                                 ' This data line has too many columns of data; ignore the remaining columns
-                                ShowMessage("Warning: line " & intLinesRead.ToString & " has extra data columns (the header line had " & strHeaderColumnNames.Length.ToString & " data columns; remaining data columns will be skipped")
+                                ShowMessage("Warning: line " & linesRead.ToString & " has extra data columns (the header line had " & headerColumnNames.Length.ToString & " data columns; remaining data columns will be skipped")
                                 Exit For
                             End If
 
-                            blnSkipValue = False
+                            skipValue = False
                             If mSkipBlankItems Then
-                                If strSplitLine(intIndex) Is Nothing OrElse strSplitLine(intIndex).Trim.Length = 0 Then
-                                    blnSkipValue = True
+                                If splitLine(index) Is Nothing OrElse splitLine(index).Trim.Length = 0 Then
+                                    skipValue = True
                                 End If
                             End If
 
-                            If Not blnSkipValue AndAlso mSkipNullItems Then
-                                If strSplitLine(intIndex) Is Nothing OrElse strSplitLine(intIndex).ToLower = "null" Then
-                                    blnSkipValue = True
+                            If Not skipValue AndAlso mSkipNullItems Then
+                                If splitLine(index) Is Nothing OrElse splitLine(index).ToLower = "null" Then
+                                    skipValue = True
                                 End If
                             End If
 
-                            If Not blnSkipValue Then
-                                swOutFile.WriteLine(strLineOut & strHeaderColumnNames(intIndex - mFixedColumnCount) & mColumnSepChar & strSplitLine(intIndex))
+                            If Not skipValue Then
+                                writer.WriteLine(lineOut & headerColumnNames(index - mFixedColumnCount) & mColumnSepChar & splitLine(index))
                             End If
                         Next
 
@@ -463,22 +462,22 @@ Public Class FileUnpivoter
 
                 End If
 
-                If intLinesRead Mod 100 = 0 Then
-                    sngPercentComplete = CSng(lngBytesRead / CSng(srInFile.BaseStream.Length) * 100)
-                    UpdateProgress(sngPercentComplete)
+                If linesRead Mod 100 = 0 Then
+                    percentComplete = CSng(bytesRead / CSng(reader.BaseStream.Length) * 100)
+                    UpdateProgress(percentComplete)
                 End If
             Loop
 
-            If Not srInFile Is Nothing Then srInFile.Close()
-            If Not swOutFile Is Nothing Then swOutFile.Close()
+            If reader IsNot Nothing Then reader.Close()
+            If writer IsNot Nothing Then writer.Close()
 
-            blnSuccess = True
+            success = True
 
         Catch ex As Exception
             HandleException("Error in UnpivotFile", ex)
-            blnSuccess = False
+            success = False
         End Try
 
-        Return blnSuccess
+        Return success
     End Function
 End Class
