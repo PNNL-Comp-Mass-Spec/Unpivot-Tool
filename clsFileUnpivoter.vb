@@ -1,4 +1,7 @@
 Option Strict On
+
+Imports System.IO
+Imports System.Reflection
 Imports PRISM
 Imports PRISM.FileProcessor
 
@@ -29,7 +32,7 @@ Imports PRISM.FileProcessor
 ' Last updated July 20, 2009
 
 Public Class clsFileUnpivoter
-    Inherits PRISM.FileProcessor.ProcessFilesBase
+    Inherits ProcessFilesBase
 
     Public Sub New()
         MyBase.mFileDate = PROGRAM_DATE
@@ -60,12 +63,12 @@ Public Class clsFileUnpivoter
 
 #Region "Properties"
 
-    Public Property ColumnSepChar() As Char
+    Public Property ColumnSepChar As Char
         Get
             Return mColumnSepChar
         End Get
-        Set(ByVal value As Char)
-            mColumnSepChar = value
+        Set
+            mColumnSepChar = Value
             If mColumnSepChar = ControlChars.Tab Then
                 mTabDelimitedFile = True
             Else
@@ -74,40 +77,41 @@ Public Class clsFileUnpivoter
         End Set
     End Property
 
-    Public Property FixedColumnCount() As Integer
+    Public Property FixedColumnCount As Integer
         Get
             Return mFixedColumnCount
         End Get
-        Set(ByVal Value As Integer)
+        Set
             If Value < 0 Then Value = 0
             mFixedColumnCount = Value
         End Set
     End Property
 
-    Public Property SkipBlankItems() As Boolean
+    Public Property SkipBlankItems As Boolean
         Get
             Return mSkipBlankItems
         End Get
-        Set(ByVal value As Boolean)
-            mSkipBlankItems = value
+        Set
+            mSkipBlankItems = Value
         End Set
     End Property
 
-    Public Property SkipNullItems() As Boolean
+    Public Property SkipNullItems As Boolean
         Get
             Return mSkipNullItems
         End Get
-        Set(ByVal value As Boolean)
-            mSkipNullItems = value
+        Set
+            mSkipNullItems = Value
         End Set
     End Property
 
-    Public Property TabDelimitedFile() As Boolean
+    ' ReSharper disable once UnusedMember.Global
+    Public Property TabDelimitedFile As Boolean
         Get
             Return mTabDelimitedFile
         End Get
-        Set(ByVal value As Boolean)
-            mTabDelimitedFile = value
+        Set
+            mTabDelimitedFile = Value
             If mTabDelimitedFile Then
                 mColumnSepChar = ControlChars.Tab
             End If
@@ -120,16 +124,16 @@ Public Class clsFileUnpivoter
         MyBase.AbortProcessingNow()
     End Sub
 
-    Private Function DetermineLineTerminatorSize(ByVal strInputFilePath As String) As Integer
+    Private Function DetermineLineTerminatorSize(strInputFilePath As String) As Integer
         Dim intByte As Integer
 
-        Dim intTerminatorSize As Integer = 2
+        Dim intTerminatorSize = 2
 
         Try
             ' Open the input file and look for the first carriage return (byte code 13) or line feed (byte code 10)
             ' Examining, at most, the first 100000 bytes
 
-            Using fsInFile = New System.IO.FileStream(strInputFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, IO.FileShare.ReadWrite)
+            Using fsInFile = New FileStream(strInputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
 
                 Do While fsInFile.Position < fsInFile.Length AndAlso fsInFile.Position < 100000
 
@@ -200,9 +204,9 @@ Public Class clsFileUnpivoter
 
     End Sub
 
-    Private Function LoadParameterFileSettings(ByVal strParameterFilePath As String) As Boolean
+    Private Function LoadParameterFileSettings(strParameterFilePath As String) As Boolean
 
-        Const OPTIONS_SECTION As String = "FileUnpivoter"
+        Const OPTIONS_SECTION = "FileUnpivoter"
 
         Dim objSettingsFile As New XmlSettingsFileAccessor
 
@@ -213,10 +217,10 @@ Public Class clsFileUnpivoter
                 Return True
             End If
 
-            If Not System.IO.File.Exists(strParameterFilePath) Then
+            If Not File.Exists(strParameterFilePath) Then
                 ' See if strParameterFilePath points to a file in the same directory as the application
-                strParameterFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), System.IO.Path.GetFileName(strParameterFilePath))
-                If Not System.IO.File.Exists(strParameterFilePath) Then
+                strParameterFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.GetFileName(strParameterFilePath))
+                If Not File.Exists(strParameterFilePath) Then
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.ParameterFileNotFound)
                     Return False
                 End If
@@ -242,7 +246,7 @@ Public Class clsFileUnpivoter
     End Function
 
     ' Main processing function
-    Public Overloads Overrides Function ProcessFile(ByVal strInputFilePath As String, ByVal strOutputFolderPath As String, ByVal strParameterFilePath As String, ByVal blnResetErrorCode As Boolean) As Boolean
+    Public Overloads Overrides Function ProcessFile(strInputFilePath As String, strOutputFolderPath As String, strParameterFilePath As String, blnResetErrorCode As Boolean) As Boolean
         ' Returns True if success, False if failure
 
         Dim strStatusMessage As String
@@ -271,7 +275,7 @@ Public Class clsFileUnpivoter
                 If Not CleanupFilePaths(strInputFilePath, strOutputFolderPath) Then
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.FilePathError)
                 Else
-                    MyBase.UpdateProgress("Parsing " & System.IO.Path.GetFileName(strInputFilePath))
+                    MyBase.UpdateProgress("Parsing " & Path.GetFileName(strInputFilePath))
                     LogMessage(MyBase.ProgressStepDescription)
                     MyBase.ResetProgress()
 
@@ -294,11 +298,11 @@ Public Class clsFileUnpivoter
 
     End Function
 
-    Private Sub SetLocalErrorCode(ByVal eNewErrorCode As eFileUnpivoterErrorCodes)
+    Private Sub SetLocalErrorCode(eNewErrorCode As eFileUnpivoterErrorCodes)
         SetLocalErrorCode(eNewErrorCode, False)
     End Sub
 
-    Private Sub SetLocalErrorCode(ByVal eNewErrorCode As eFileUnpivoterErrorCodes, ByVal blnLeaveExistingErrorCodeUnchanged As Boolean)
+    Private Sub SetLocalErrorCode(eNewErrorCode As eFileUnpivoterErrorCodes, blnLeaveExistingErrorCodeUnchanged As Boolean)
 
         If blnLeaveExistingErrorCodeUnchanged AndAlso mLocalErrorCode <> eFileUnpivoterErrorCodes.NoError Then
             ' An error code is already defined; do not change it
@@ -316,10 +320,10 @@ Public Class clsFileUnpivoter
 
     End Sub
 
-    Protected Function UnpivotFile(ByVal strInputFilePath As String, ByVal strOutputFolderPath As String) As Boolean
+    Protected Function UnpivotFile(strInputFilePath As String, strOutputFolderPath As String) As Boolean
 
-        Dim srInFile As System.IO.StreamReader
-        Dim swOutFile As System.IO.StreamWriter
+        Dim srInFile As StreamReader
+        Dim swOutFile As StreamWriter
 
         Dim strOutputFilePath As String
         Dim strSepCharDescription As String
@@ -344,17 +348,17 @@ Public Class clsFileUnpivoter
         Dim blnSuccess As Boolean
 
         Try
-            strOutputFilePath = System.IO.Path.GetFileNameWithoutExtension(strInputFilePath) & "_Unpivot" & System.IO.Path.GetExtension(strInputFilePath)
+            strOutputFilePath = Path.GetFileNameWithoutExtension(strInputFilePath) & "_Unpivot" & Path.GetExtension(strInputFilePath)
 
             If strOutputFolderPath Is Nothing OrElse strOutputFolderPath.Length = 0 Then
-                strOutputFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(strInputFilePath), strOutputFilePath)
+                strOutputFilePath = Path.Combine(Path.GetDirectoryName(strInputFilePath), strOutputFilePath)
             Else
-                strOutputFilePath = System.IO.Path.Combine(strOutputFolderPath, strOutputFilePath)
+                strOutputFilePath = Path.Combine(strOutputFolderPath, strOutputFilePath)
             End If
 
             Try
                 ' Open the input file
-                srInFile = New System.IO.StreamReader(New System.IO.FileStream(strInputFilePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read))
+                srInFile = New StreamReader(New FileStream(strInputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
 
             Catch ex As Exception
                 HandleException("Error opening input file: " & strInputFilePath, ex)
@@ -363,7 +367,7 @@ Public Class clsFileUnpivoter
 
             Try
                 ' Create the output file; it will be overwritten if it exists
-                swOutFile = New System.IO.StreamWriter(New System.IO.FileStream(strOutputFilePath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.Read))
+                swOutFile = New StreamWriter(New FileStream(strOutputFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
 
             Catch ex As Exception
                 HandleException("Error creating the output file: " & strOutputFilePath, ex)

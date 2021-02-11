@@ -1,6 +1,11 @@
 Option Strict On
 
+Imports System.IO
+Imports System.Reflection
+Imports System.Threading
+Imports System.Windows.Forms
 Imports PRISM
+
 ' This program uses clsFileUnpivoter to read in a tab delimited file that is in a crosstab / pivottable format
 ' and writes out a new file where the data has been unpivotted
 '
@@ -51,10 +56,10 @@ Public Module modMain
     Private mLogMessagesToFile As Boolean
 
     Private WithEvents mUnpivoter As clsFileUnpivoter
-    Private mLastProgressReportTime As System.DateTime
+    Private mLastProgressReportTime As DateTime
     Private mLastProgressReportValue As Integer
 
-    Private Sub DisplayProgressPercent(ByVal intPercentComplete As Integer, ByVal blnAddCarriageReturn As Boolean)
+    Private Sub DisplayProgressPercent(intPercentComplete As Integer, blnAddCarriageReturn As Boolean)
         If blnAddCarriageReturn Then
             Console.WriteLine()
         End If
@@ -70,7 +75,6 @@ Public Module modMain
         Dim intReturnCode As Integer
         Dim objParseCommandLine As New clsParseCommandLine
         Dim blnProceed As Boolean
-        Dim blnSuccess As Boolean
 
         intReturnCode = 0
         mInputFilePath = String.Empty
@@ -136,7 +140,6 @@ Public Module modMain
                     End If
 
                 Catch ex As Exception
-                    blnSuccess = False
                     Console.WriteLine("Error initializing File Unpivoter " & ex.Message)
                 End Try
 
@@ -153,12 +156,12 @@ Public Module modMain
     End Function
 
 
-    Private Function SetOptionsUsingCommandLineParameters(ByVal objParseCommandLine As clsParseCommandLine) As Boolean
+    Private Function SetOptionsUsingCommandLineParameters(objParseCommandLine As clsParseCommandLine) As Boolean
         ' Returns True if no problems; otherwise, returns false
         ' /I:PeptideInputFilePath /R: ProteinInputFilePath /O:OutputFolderPath /P:ParameterFilePath
 
         Dim strValue As String = String.Empty
-        Dim strValidParameters() As String = New String() {"I", "O", "F", "C", "B", "N", "S", "A", "R", "L", "Q"}
+        Dim strValidParameters = New String() {"I", "O", "F", "C", "B", "N", "S", "A", "R", "L", "Q"}
 
         Dim intResult As Integer
 
@@ -220,6 +223,7 @@ Public Module modMain
 
         Catch ex As Exception
             ConsoleMsgUtils.ShowError("Error parsing the command line parameters", ex)
+            Return False
         End Try
 
     End Function
@@ -229,7 +233,7 @@ Public Module modMain
         Try
             Console.WriteLine("This program reads in a delimited text file that is in crosstab (aka pivot table) format and writes out a new file where the data has been unpivotted.")
             Console.WriteLine()
-            Console.WriteLine("Program syntax:" & ControlChars.NewLine & System.IO.Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location) & _
+            Console.WriteLine("Program syntax:" & ControlChars.NewLine & Path.GetFileName(Assembly.GetExecutingAssembly().Location) &
                               " /I:InputFilePath [/O:OutputFolderName]")
             Console.WriteLine(" [/F:FixedColumnCount] [/C:ColumnSepChar] [/B] [/N]")
             Console.WriteLine(" [/S:[MaxLevel]] [/A:AlternateOutputFolderPath] [/R] [/L] [/Q]")
@@ -255,29 +259,29 @@ Public Module modMain
             Console.WriteLine("Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA) in 2009")
             Console.WriteLine()
 
-            Console.WriteLine("This is version " & System.Windows.Forms.Application.ProductVersion & " (" & PROGRAM_DATE & ")")
+            Console.WriteLine("This is version " & Application.ProductVersion & " (" & PROGRAM_DATE & ")")
             Console.WriteLine()
 
             Console.WriteLine("E-mail: matthew.monroe@pnl.gov or matt@alchemistmatt.com")
             Console.WriteLine("Website: http://ncrr.pnl.gov/ or http://www.sysbio.org/resources/staff/")
             Console.WriteLine()
 
-            Console.WriteLine("Licensed under the Apache License, Version 2.0; you may not use this file except in compliance with the License.  " & _
+            Console.WriteLine("Licensed under the Apache License, Version 2.0; you may not use this file except in compliance with the License.  " &
                               "You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0")
             Console.WriteLine()
 
-            Console.WriteLine("Notice: This computer software was prepared by Battelle Memorial Institute, " & _
-                              "hereinafter the Contractor, under Contract No. DE-AC05-76RL0 1830 with the " & _
-                              "Department of Energy (DOE).  All rights in the computer software are reserved " & _
-                              "by DOE on behalf of the United States Government and the Contractor as " & _
-                              "provided in the Contract.  NEITHER THE GOVERNMENT NOR THE CONTRACTOR MAKES ANY " & _
-                              "WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS " & _
-                              "SOFTWARE.  This notice including this sentence must appear on any copies of " & _
+            Console.WriteLine("Notice: This computer software was prepared by Battelle Memorial Institute, " &
+                              "hereinafter the Contractor, under Contract No. DE-AC05-76RL0 1830 with the " &
+                              "Department of Energy (DOE).  All rights in the computer software are reserved " &
+                              "by DOE on behalf of the United States Government and the Contractor as " &
+                              "provided in the Contract.  NEITHER THE GOVERNMENT NOR THE CONTRACTOR MAKES ANY " &
+                              "WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS " &
+                              "SOFTWARE.  This notice including this sentence must appear on any copies of " &
                               "this computer software.")
             Console.WriteLine()
 
             ' Delay for 750 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
-            System.Threading.Thread.Sleep(750)
+            Thread.Sleep(750)
 
         Catch ex As Exception
             Console.WriteLine("Error displaying the program syntax: " & ex.Message)
@@ -285,9 +289,9 @@ Public Module modMain
 
     End Sub
 
-    Private Sub mUnpivoter_ProgressChanged(ByVal taskDescription As String, ByVal percentComplete As Single) Handles mUnpivoter.ProgressUpdate
-        Const PERCENT_REPORT_INTERVAL As Integer = 25
-        Const PROGRESS_DOT_INTERVAL_MSEC As Integer = 250
+    Private Sub mUnpivoter_ProgressChanged(taskDescription As String, percentComplete As Single) Handles mUnpivoter.ProgressUpdate
+        Const PERCENT_REPORT_INTERVAL = 25
+        Const PROGRESS_DOT_INTERVAL_MSEC = 250
 
         If percentComplete >= mLastProgressReportValue Then
             If mLastProgressReportValue > 0 Then
