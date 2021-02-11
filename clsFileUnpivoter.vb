@@ -188,8 +188,6 @@ Public Class clsFileUnpivoter
     End Function
 
     Private Sub InitializeLocalVariables()
-        MyBase.ShowMessages = True
-
         mFixedColumnCount = 1
         mSkipBlankItems = True
         mSkipNullItems = False

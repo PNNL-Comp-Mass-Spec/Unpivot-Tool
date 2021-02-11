@@ -49,7 +49,6 @@ Public Module modMain
     Private mRecurseFoldersMaxLevels As Integer
 
     Private mLogMessagesToFile As Boolean
-    Private mQuietMode As Boolean = False
 
     Private WithEvents mUnpivoter As clsFileUnpivoter
     Private mLastProgressReportTime As System.DateTime
@@ -91,7 +90,6 @@ Public Module modMain
         mRecurseFolders = False
         mRecurseFoldersMaxLevels = 0
 
-        mQuietMode = False
         mLogMessagesToFile = False
 
         Try
@@ -108,7 +106,6 @@ Public Module modMain
                     mUnpivoter = New clsFileUnpivoter
 
                     With mUnpivoter
-                        .ShowMessages = Not mQuietMode
                         .LogMessagesToFile = mLogMessagesToFile
 
                         .FixedColumnCount = mFixedColumnCount
@@ -132,8 +129,8 @@ Public Module modMain
                             intReturnCode = 0
                         Else
                             intReturnCode = mUnpivoter.ErrorCode
-                            If intReturnCode <> 0 AndAlso Not mQuietMode Then
-                                Console.WriteLine("Error while processing: " & mUnpivoter.GetErrorMessage())
+                            If intReturnCode <> 0 Then
+                                ConsoleMsgUtils.ShowWarning("Error while processing: " & mUnpivoter.GetErrorMessage())
                             End If
                         End If
                     End If
@@ -147,11 +144,7 @@ Public Module modMain
             End If
 
         Catch ex As Exception
-            If mQuietMode Then
-                Throw ex
-            Else
-                Console.WriteLine("Error occurred in modMain->Main: " & ControlChars.NewLine & ex.Message)
-            End If
+            ConsoleMsgUtils.ShowError("Error occurred in modMain->Main", ex)
             intReturnCode = -1
         End Try
 
@@ -219,7 +212,6 @@ Public Module modMain
                     If .RetrieveValueForParameter("R", strValue) Then mRecreateFolderHierarchyInAlternatePath = True
 
                     If .RetrieveValueForParameter("L", strValue) Then mLogMessagesToFile = True
-                    If .RetrieveValueForParameter("Q", strValue) Then mQuietMode = True
 
                 End With
 
@@ -227,11 +219,7 @@ Public Module modMain
             End If
 
         Catch ex As Exception
-            If mQuietMode Then
-                Throw New System.Exception("Error parsing the command line parameters", ex)
-            Else
-                Console.WriteLine("Error parsing the command line parameters: " & ControlChars.NewLine & ex.Message)
-            End If
+            ConsoleMsgUtils.ShowError("Error parsing the command line parameters", ex)
         End Try
 
     End Function
