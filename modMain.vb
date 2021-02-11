@@ -34,6 +34,7 @@ Imports PRISM
 ' this computer software.
 
 Public Module modMain
+    ' Ignore Spelling: unpivoter, unpivotted, Sep, unpivotting, pivottable
 
     Public Const PROGRAM_DATE As String = "February 11, 2021"
 
