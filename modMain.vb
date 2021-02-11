@@ -70,8 +70,9 @@ Public Module modMain
         End If
     End Sub
 
+    ' Entry method
+    ' Returns 0 if no error, error code if an error
     Public Function Main() As Integer
-        ' Returns 0 if no error, error code if an error
         Dim returnCode As Integer
         Dim commandLineParser As New clsParseCommandLine
         Dim proceed As Boolean
@@ -157,9 +158,10 @@ Public Module modMain
 
     End Function
 
+    ' Set options using the command line parameters, for example:
+    ' /I:PeptideInputFilePath /R: ProteinInputFilePath /O:OutputDirectoryPath /P:ParameterFilePath
+    ' Returns True if no problems; otherwise, returns false
     Private Function SetOptionsUsingCommandLineParameters(commandLineParser As clsParseCommandLine) As Boolean
-        ' Returns True if no problems; otherwise, returns false
-        ' /I:PeptideInputFilePath /R: ProteinInputFilePath /O:OutputFolderPath /P:ParameterFilePath
 
         Dim value As String = String.Empty
         Dim validParameters = New String() {"I", "O", "F", "C", "B", "N", "S", "A", "R", "L", "Q"}

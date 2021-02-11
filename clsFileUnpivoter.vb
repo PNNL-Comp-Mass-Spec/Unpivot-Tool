@@ -34,6 +34,8 @@ Imports PRISM.FileProcessor
 Public Class FileUnpivoter
     Inherits ProcessFilesBase
 
+    ' Ignore Spelling: pivottable, unpivot, unpivotted, CrLf, LfCr, SepChar, Unpivoter
+
     Public Sub New()
         MyBase.mFileDate = PROGRAM_DATE
         InitializeLocalVariables()
@@ -50,7 +52,7 @@ Public Class FileUnpivoter
 
 #End Region
 
-#Region "Classwide variables"
+#Region "Class wide variables"
     Private mFixedColumnCount As Integer
     Private mSkipBlankItems As Boolean
     Private mSkipNullItems As Boolean
@@ -167,8 +169,9 @@ Public Class FileUnpivoter
 
     End Function
 
+    ' Get the error message
+    ' Returns "" if no error
     Public Overrides Function GetErrorMessage() As String
-        ' Returns "" if no error
 
         Dim message As String
 
