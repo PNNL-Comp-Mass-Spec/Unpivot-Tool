@@ -1,10 +1,15 @@
 Unpivot Tool
 
+Version 1.0.7712; February 11, 2021
+	- Update to .NET 4.7.2
+	- Compile as AnyCPU
+	- Use classes in PRISM.dll
+
 Version 1.0.5561; March 24, 2015
-	- Updated to .NET 4
+	- Update to .NET 4
 
 Version 1.0.3491; July 23, 2009
 	- Minor code fixes
 	
 Version 1.0.3490; July 22, 2009
-	- Initial verion
+	- Initial version
