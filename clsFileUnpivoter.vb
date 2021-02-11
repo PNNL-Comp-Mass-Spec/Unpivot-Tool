@@ -1,4 +1,6 @@
 Option Strict On
+Imports PRISM
+Imports PRISM.FileProcessor
 
 ' This class reads in a tab delimited file that is in a crosstab / pivottable format
 ' and writes out a new file where the data has been unpivotted
@@ -10,24 +12,24 @@ Option Strict On
 ' E-mail: matthew.monroe@pnl.gov or matt@alchemistmatt.com
 ' Website: http://ncrr.pnl.gov/ or http://www.sysbio.org/resources/staff/
 ' -------------------------------------------------------------------------------
-' 
+'
 ' Licensed under the Apache License, Version 2.0; you may not use this file except
-' in compliance with the License.  You may obtain a copy of the License at 
+' in compliance with the License.  You may obtain a copy of the License at
 ' http://www.apache.org/licenses/LICENSE-2.0
 '
-' Notice: This computer software was prepared by Battelle Memorial Institute, 
-' hereinafter the Contractor, under Contract No. DE-AC05-76RL0 1830 with the 
-' Department of Energy (DOE).  All rights in the computer software are reserved 
-' by DOE on behalf of the United States Government and the Contractor as 
-' provided in the Contract.  NEITHER THE GOVERNMENT NOR THE CONTRACTOR MAKES ANY 
-' WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS 
-' SOFTWARE.  This notice including this sentence must appear on any copies of 
+' Notice: This computer software was prepared by Battelle Memorial Institute,
+' hereinafter the Contractor, under Contract No. DE-AC05-76RL0 1830 with the
+' Department of Energy (DOE).  All rights in the computer software are reserved
+' by DOE on behalf of the United States Government and the Contractor as
+' provided in the Contract.  NEITHER THE GOVERNMENT NOR THE CONTRACTOR MAKES ANY
+' WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS
+' SOFTWARE.  This notice including this sentence must appear on any copies of
 ' this computer software.
 
 ' Last updated July 20, 2009
 
 Public Class clsFileUnpivoter
-    Inherits clsProcessFilesBaseClass
+    Inherits PRISM.FileProcessor.ProcessFilesBase
 
     Public Sub New()
         MyBase.mFileDate = PROGRAM_DATE
@@ -167,8 +169,8 @@ Public Class clsFileUnpivoter
 
         Dim strErrorMessage As String
 
-        If MyBase.ErrorCode = clsProcessFilesBaseClass.eProcessFilesErrorCodes.LocalizedError Or _
-           MyBase.ErrorCode = clsProcessFilesBaseClass.eProcessFilesErrorCodes.NoError Then
+        If MyBase.ErrorCode = ProcessFilesErrorCodes.LocalizedError Or
+           MyBase.ErrorCode = ProcessFilesErrorCodes.NoError Then
             Select Case mLocalErrorCode
                 Case eFileUnpivoterErrorCodes.NoError
                     strErrorMessage = ""
@@ -217,7 +219,7 @@ Public Class clsFileUnpivoter
                 ' See if strParameterFilePath points to a file in the same directory as the application
                 strParameterFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), System.IO.Path.GetFileName(strParameterFilePath))
                 If Not System.IO.File.Exists(strParameterFilePath) Then
-                    MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.ParameterFileNotFound)
+                    MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.ParameterFileNotFound)
                     Return False
                 End If
             End If
@@ -225,7 +227,7 @@ Public Class clsFileUnpivoter
             If objSettingsFile.LoadSettings(strParameterFilePath) Then
                 If Not objSettingsFile.SectionPresent(OPTIONS_SECTION) Then
                     ShowErrorMessage("The node '<section name=""" & OPTIONS_SECTION & """> was not found in the parameter file: " & strParameterFilePath)
-                    MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.InvalidParameterFile)
+                    MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidParameterFile)
                     Return False
                 Else
                     ' mMySetting = objSettingsFile.GetParam(OPTIONS_SECTION, "MySetting", "Default value")
@@ -256,8 +258,8 @@ Public Class clsFileUnpivoter
             strStatusMessage = "Parameter file load error: " & strParameterFilePath
             ShowErrorMessage(strStatusMessage)
 
-            If MyBase.ErrorCode = clsProcessFilesBaseClass.eProcessFilesErrorCodes.NoError Then
-                MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.InvalidParameterFile)
+            If MyBase.ErrorCode = ProcessFilesErrorCodes.NoError Then
+                MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidParameterFile)
             End If
             Return False
         End If
@@ -265,14 +267,14 @@ Public Class clsFileUnpivoter
         Try
             If strInputFilePath Is Nothing OrElse strInputFilePath.Length = 0 Then
                 ShowErrorMessage("Input file name is empty")
-                MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.InvalidInputFilePath)
+                MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidInputFilePath)
             Else
                 ' Note that CleanupFilePaths() will update mOutputFolderPath, which is used by LogMessage()
                 If Not CleanupFilePaths(strInputFilePath, strOutputFolderPath) Then
-                    MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.FilePathError)
+                    MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.FilePathError)
                 Else
-                    MyBase.mProgressStepDescription = "Parsing " & System.IO.Path.GetFileName(strInputFilePath)
-                    LogMessage(MyBase.mProgressStepDescription)
+                    MyBase.UpdateProgress("Parsing " & System.IO.Path.GetFileName(strInputFilePath))
+                    LogMessage(MyBase.ProgressStepDescription)
                     MyBase.ResetProgress()
 
                     ' Call UnpivotFile to perform the work
@@ -306,11 +308,11 @@ Public Class clsFileUnpivoter
             mLocalErrorCode = eNewErrorCode
 
             If eNewErrorCode = eFileUnpivoterErrorCodes.NoError Then
-                If MyBase.ErrorCode = clsProcessFilesBaseClass.eProcessFilesErrorCodes.LocalizedError Then
-                    MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.NoError)
+                If MyBase.ErrorCode = ProcessFilesErrorCodes.LocalizedError Then
+                    MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.NoError)
                 End If
             Else
-                MyBase.SetBaseClassErrorCode(clsProcessFilesBaseClass.eProcessFilesErrorCodes.LocalizedError)
+                MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.LocalizedError)
             End If
         End If
 

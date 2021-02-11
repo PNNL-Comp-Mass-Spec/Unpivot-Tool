@@ -1,5 +1,6 @@
 Option Strict On
 
+Imports PRISM
 ' This program uses clsFileUnpivoter to read in a tab delimited file that is in a crosstab / pivottable format
 ' and writes out a new file where the data has been unpivotted
 '
@@ -13,23 +14,23 @@ Option Strict On
 ' E-mail: matthew.monroe@pnl.gov or matt@alchemistmatt.com
 ' Website: http://ncrr.pnl.gov/ or http://www.sysbio.org/resources/staff/
 ' -------------------------------------------------------------------------------
-' 
+'
 ' Licensed under the Apache License, Version 2.0; you may not use this file except
-' in compliance with the License.  You may obtain a copy of the License at 
+' in compliance with the License.  You may obtain a copy of the License at
 ' http://www.apache.org/licenses/LICENSE-2.0
 '
-' Notice: This computer software was prepared by Battelle Memorial Institute, 
-' hereinafter the Contractor, under Contract No. DE-AC05-76RL0 1830 with the 
-' Department of Energy (DOE).  All rights in the computer software are reserved 
-' by DOE on behalf of the United States Government and the Contractor as 
-' provided in the Contract.  NEITHER THE GOVERNMENT NOR THE CONTRACTOR MAKES ANY 
-' WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS 
-' SOFTWARE.  This notice including this sentence must appear on any copies of 
+' Notice: This computer software was prepared by Battelle Memorial Institute,
+' hereinafter the Contractor, under Contract No. DE-AC05-76RL0 1830 with the
+' Department of Energy (DOE).  All rights in the computer software are reserved
+' by DOE on behalf of the United States Government and the Contractor as
+' provided in the Contract.  NEITHER THE GOVERNMENT NOR THE CONTRACTOR MAKES ANY
+' WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS
+' SOFTWARE.  This notice including this sentence must appear on any copies of
 ' this computer software.
 
 Public Module modMain
 
-    Public Const PROGRAM_DATE As String = "March 24, 2015"
+    Public Const PROGRAM_DATE As String = "February 11, 2021"
 
     Private mInputFilePath As String
     Private mOutputFolderName As String             ' Optional
@@ -121,7 +122,7 @@ Public Module modMain
                     End With
 
                     If mRecurseFolders Then
-                        If mUnpivoter.ProcessFilesAndRecurseFolders(mInputFilePath, mOutputFolderName, mOutputFolderAlternatePath, mRecreateFolderHierarchyInAlternatePath, mParameterFilePath, mRecurseFoldersMaxLevels) Then
+                        If mUnpivoter.ProcessFilesAndRecurseDirectories(mInputFilePath, mOutputFolderName, mOutputFolderAlternatePath, mRecreateFolderHierarchyInAlternatePath, mParameterFilePath, mRecurseFoldersMaxLevels) Then
                             intReturnCode = 0
                         Else
                             intReturnCode = mUnpivoter.ErrorCode
@@ -169,7 +170,7 @@ Public Module modMain
         Dim intResult As Integer
 
         Try
-            ' Make sure no invalid parameters are present 
+            ' Make sure no invalid parameters are present
             If objParseCommandLine.InvalidParametersPresent(strValidParameters) Then
                 Return False
             Else
@@ -296,7 +297,7 @@ Public Module modMain
 
     End Sub
 
-    Private Sub mUnpivoter_ProgressChanged(ByVal taskDescription As String, ByVal percentComplete As Single) Handles mUnpivoter.ProgressChanged
+    Private Sub mUnpivoter_ProgressChanged(ByVal taskDescription As String, ByVal percentComplete As Single) Handles mUnpivoter.ProgressUpdate
         Const PERCENT_REPORT_INTERVAL As Integer = 25
         Const PROGRESS_DOT_INTERVAL_MSEC As Integer = 250
 
