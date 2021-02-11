@@ -31,7 +31,7 @@ Imports PRISM.FileProcessor
 
 ' Last updated July 20, 2009
 
-Public Class clsFileUnpivoter
+Public Class FileUnpivoter
     Inherits ProcessFilesBase
 
     Public Sub New()
@@ -40,7 +40,7 @@ Public Class clsFileUnpivoter
     End Sub
 
 #Region "Constants and Enums"
-    Public Enum eFileUnpivoterErrorCodes
+    Public Enum FileUnpivoterErrorCodes
         NoError = 0
         UnspecifiedError = -1
     End Enum
@@ -58,7 +58,7 @@ Public Class clsFileUnpivoter
     Private mTabDelimitedFile As Boolean        ' When true (the default) then assumes the separation char is a tab; if false, then mColumnSepChar is used
     Private mColumnSepChar As Char
 
-    Private mLocalErrorCode As eFileUnpivoterErrorCodes
+    Private mLocalErrorCode As FileUnpivoterErrorCodes
 #End Region
 
 #Region "Properties"
@@ -176,9 +176,9 @@ Public Class clsFileUnpivoter
         If MyBase.ErrorCode = ProcessFilesErrorCodes.LocalizedError Or
            MyBase.ErrorCode = ProcessFilesErrorCodes.NoError Then
             Select Case mLocalErrorCode
-                Case eFileUnpivoterErrorCodes.NoError
+                Case FileUnpivoterErrorCodes.NoError
                     strErrorMessage = ""
-                Case eFileUnpivoterErrorCodes.UnspecifiedError
+                Case FileUnpivoterErrorCodes.UnspecifiedError
                     strErrorMessage = "Unspecified localized error"
                 Case Else
                     ' This shouldn't happen
@@ -200,7 +200,7 @@ Public Class clsFileUnpivoter
         mColumnSepChar = ControlChars.Tab
 
 
-        mLocalErrorCode = eFileUnpivoterErrorCodes.NoError
+        mLocalErrorCode = FileUnpivoterErrorCodes.NoError
 
     End Sub
 
@@ -253,7 +253,7 @@ Public Class clsFileUnpivoter
         Dim blnSuccess As Boolean
 
         If blnResetErrorCode Then
-            SetLocalErrorCode(eFileUnpivoterErrorCodes.NoError)
+            SetLocalErrorCode(FileUnpivoterErrorCodes.NoError)
         End If
 
         If Not LoadParameterFileSettings(strParameterFilePath) Then
@@ -298,18 +298,18 @@ Public Class clsFileUnpivoter
 
     End Function
 
-    Private Sub SetLocalErrorCode(eNewErrorCode As eFileUnpivoterErrorCodes)
+    Private Sub SetLocalErrorCode(eNewErrorCode As FileUnpivoterErrorCodes)
         SetLocalErrorCode(eNewErrorCode, False)
     End Sub
 
-    Private Sub SetLocalErrorCode(eNewErrorCode As eFileUnpivoterErrorCodes, blnLeaveExistingErrorCodeUnchanged As Boolean)
+    Private Sub SetLocalErrorCode(eNewErrorCode As FileUnpivoterErrorCodes, blnLeaveExistingErrorCodeUnchanged As Boolean)
 
-        If blnLeaveExistingErrorCodeUnchanged AndAlso mLocalErrorCode <> eFileUnpivoterErrorCodes.NoError Then
+        If blnLeaveExistingErrorCodeUnchanged AndAlso mLocalErrorCode <> FileUnpivoterErrorCodes.NoError Then
             ' An error code is already defined; do not change it
         Else
             mLocalErrorCode = eNewErrorCode
 
-            If eNewErrorCode = eFileUnpivoterErrorCodes.NoError Then
+            If eNewErrorCode = FileUnpivoterErrorCodes.NoError Then
                 If MyBase.ErrorCode = ProcessFilesErrorCodes.LocalizedError Then
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.NoError)
                 End If
