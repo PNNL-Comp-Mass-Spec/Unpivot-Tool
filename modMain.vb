@@ -58,24 +58,24 @@ Public Module modMain
     Private mLastProgressReportTime As DateTime
     Private mLastProgressReportValue As Integer
 
-    Private Sub DisplayProgressPercent(intPercentComplete As Integer, blnAddCarriageReturn As Boolean)
-        If blnAddCarriageReturn Then
+    Private Sub DisplayProgressPercent(percentComplete As Integer, addCarriageReturn As Boolean)
+        If addCarriageReturn Then
             Console.WriteLine()
         End If
-        If intPercentComplete > 100 Then intPercentComplete = 100
-        Console.Write("Processing: " & intPercentComplete.ToString & "% ")
-        If blnAddCarriageReturn Then
+        If percentComplete > 100 Then percentComplete = 100
+        Console.Write("Processing: " & percentComplete.ToString & "% ")
+        If addCarriageReturn Then
             Console.WriteLine()
         End If
     End Sub
 
     Public Function Main() As Integer
         ' Returns 0 if no error, error code if an error
-        Dim intReturnCode As Integer
-        Dim objParseCommandLine As New clsParseCommandLine
-        Dim blnProceed As Boolean
+        Dim returnCode As Integer
+        Dim commandLineParser As New clsParseCommandLine
+        Dim proceed As Boolean
 
-        intReturnCode = 0
+        returnCode = 0
         mInputFilePath = String.Empty
         mOutputFolderName = String.Empty
         mParameterFilePath = String.Empty
@@ -96,14 +96,14 @@ Public Module modMain
         mLogMessagesToFile = False
 
         Try
-            blnProceed = False
-            If objParseCommandLine.ParseCommandLine Then
-                If SetOptionsUsingCommandLineParameters(objParseCommandLine) Then blnProceed = True
+            proceed = False
+            If commandLineParser.ParseCommandLine Then
+                If SetOptionsUsingCommandLineParameters(commandLineParser) Then proceed = True
             End If
 
-            If Not blnProceed OrElse objParseCommandLine.NeedToShowHelp OrElse mInputFilePath.Length = 0 Then
+            If Not proceed OrElse commandLineParser.NeedToShowHelp OrElse mInputFilePath.Length = 0 Then
                 ShowProgramHelp()
-                intReturnCode = -1
+                returnCode = -1
             Else
                 Try
                     Dim unpivoter = New FileUnpivoter
@@ -125,16 +125,16 @@ Public Module modMain
 
                     If mRecurseFolders Then
                         If unpivoter.ProcessFilesAndRecurseDirectories(mInputFilePath, mOutputFolderName, mOutputFolderAlternatePath, mRecreateFolderHierarchyInAlternatePath, mParameterFilePath, mRecurseFoldersMaxLevels) Then
-                            intReturnCode = 0
+                            returnCode = 0
                         Else
-                            intReturnCode = unpivoter.ErrorCode
+                            returnCode = unpivoter.ErrorCode
                         End If
                     Else
                         If unpivoter.ProcessFilesWildcard(mInputFilePath, mOutputFolderName, mParameterFilePath) Then
-                            intReturnCode = 0
+                            returnCode = 0
                         Else
-                            intReturnCode = unpivoter.ErrorCode
-                            If intReturnCode <> 0 Then
+                            returnCode = unpivoter.ErrorCode
+                            If returnCode <> 0 Then
                                 ConsoleMsgUtils.ShowWarning("Error while processing: " & unpivoter.GetErrorMessage())
                             End If
                         End If
@@ -149,72 +149,72 @@ Public Module modMain
 
         Catch ex As Exception
             ConsoleMsgUtils.ShowError("Error occurred in modMain->Main", ex)
-            intReturnCode = -1
+            returnCode = -1
         End Try
 
-        Return intReturnCode
+        Return returnCode
 
     End Function
 
-    Private Function SetOptionsUsingCommandLineParameters(objParseCommandLine As clsParseCommandLine) As Boolean
+    Private Function SetOptionsUsingCommandLineParameters(commandLineParser As clsParseCommandLine) As Boolean
         ' Returns True if no problems; otherwise, returns false
         ' /I:PeptideInputFilePath /R: ProteinInputFilePath /O:OutputFolderPath /P:ParameterFilePath
 
-        Dim strValue As String = String.Empty
-        Dim strValidParameters = New String() {"I", "O", "F", "C", "B", "N", "S", "A", "R", "L", "Q"}
+        Dim value As String = String.Empty
+        Dim validParameters = New String() {"I", "O", "F", "C", "B", "N", "S", "A", "R", "L", "Q"}
 
-        Dim intResult As Integer
+        Dim result As Integer
 
         Try
             ' Make sure no invalid parameters are present
-            If objParseCommandLine.InvalidParametersPresent(strValidParameters) Then
+            If commandLineParser.InvalidParametersPresent(validParameters) Then
                 Return False
             Else
-                With objParseCommandLine
+                With commandLineParser
 
                     If .NonSwitchParameterCount > 0 Then
                         ' Treat the first non-switch parameter as the input file
                         mInputFilePath = .RetrieveNonSwitchParameter(0)
                     End If
 
-                    ' Query objParseCommandLine to see if various parameters are present
-                    If .RetrieveValueForParameter("I", strValue) Then mInputFilePath = strValue
-                    If .RetrieveValueForParameter("O", strValue) Then mOutputFolderName = strValue
+                    ' Query commandLineParser to see if various parameters are present
+                    If .RetrieveValueForParameter("I", value) Then mInputFilePath = value
+                    If .RetrieveValueForParameter("O", value) Then mOutputFolderName = value
 
-                    If .RetrieveValueForParameter("F", strValue) Then
-                        If Integer.TryParse(strValue, intResult) Then
-                            mFixedColumnCount = intResult
+                    If .RetrieveValueForParameter("F", value) Then
+                        If Integer.TryParse(value, result) Then
+                            mFixedColumnCount = result
                         Else
                             Console.WriteLine("Error parsing /F parameter; should be an integer")
                         End If
                     End If
 
-                    If .RetrieveValueForParameter("C", strValue) Then
+                    If .RetrieveValueForParameter("C", value) Then
                         ' The user has defined a column separator character
                         mTabDelimitedFile = False
-                        If strValue.ToLower = "space" Then
+                        If value.ToLower = "space" Then
                             mColumnSepChar = " "c
-                        ElseIf strValue.ToLower = "tab" Then
+                        ElseIf value.ToLower = "tab" Then
                             mColumnSepChar = ControlChars.Tab
                         Else
-                            mColumnSepChar = strValue.Chars(0)
+                            mColumnSepChar = value.Chars(0)
                         End If
 
                     End If
 
-                    If .RetrieveValueForParameter("B", strValue) Then mSkipBlankItems = True
-                    If .RetrieveValueForParameter("N", strValue) Then mSkipNullItems = True
+                    If .RetrieveValueForParameter("B", value) Then mSkipBlankItems = True
+                    If .RetrieveValueForParameter("N", value) Then mSkipNullItems = True
 
-                    If .RetrieveValueForParameter("S", strValue) Then
+                    If .RetrieveValueForParameter("S", value) Then
                         mRecurseFolders = True
-                        If IsNumeric(strValue) Then
-                            mRecurseFoldersMaxLevels = CInt(strValue)
+                        If IsNumeric(value) Then
+                            mRecurseFoldersMaxLevels = CInt(value)
                         End If
                     End If
-                    If .RetrieveValueForParameter("A", strValue) Then mOutputFolderAlternatePath = strValue
-                    If .RetrieveValueForParameter("R", strValue) Then mRecreateFolderHierarchyInAlternatePath = True
+                    If .RetrieveValueForParameter("A", value) Then mOutputFolderAlternatePath = value
+                    If .RetrieveValueForParameter("R", value) Then mRecreateFolderHierarchyInAlternatePath = True
 
-                    If .RetrieveValueForParameter("L", strValue) Then mLogMessagesToFile = True
+                    If .RetrieveValueForParameter("L", value) Then mLogMessagesToFile = True
 
                 End With
 
