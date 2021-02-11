@@ -55,7 +55,6 @@ Public Module modMain
 
     Private mLogMessagesToFile As Boolean
 
-    Private WithEvents mUnpivoter As clsFileUnpivoter
     Private mLastProgressReportTime As DateTime
     Private mLastProgressReportValue As Integer
 
@@ -107,9 +106,11 @@ Public Module modMain
                 intReturnCode = -1
             Else
                 Try
-                    mUnpivoter = New clsFileUnpivoter
+                    Dim unpivoter = New FileUnpivoter
+                    AddHandler unpivoter.ProgressUpdate, AddressOf Unpivoter_ProgressChanged
+                    AddHandler unpivoter.ProgressReset, AddressOf Unpivoter_ProgressReset
 
-                    With mUnpivoter
+                    With unpivoter
                         .LogMessagesToFile = mLogMessagesToFile
 
                         .FixedColumnCount = mFixedColumnCount
@@ -123,18 +124,18 @@ Public Module modMain
                     End With
 
                     If mRecurseFolders Then
-                        If mUnpivoter.ProcessFilesAndRecurseDirectories(mInputFilePath, mOutputFolderName, mOutputFolderAlternatePath, mRecreateFolderHierarchyInAlternatePath, mParameterFilePath, mRecurseFoldersMaxLevels) Then
+                        If unpivoter.ProcessFilesAndRecurseDirectories(mInputFilePath, mOutputFolderName, mOutputFolderAlternatePath, mRecreateFolderHierarchyInAlternatePath, mParameterFilePath, mRecurseFoldersMaxLevels) Then
                             intReturnCode = 0
                         Else
-                            intReturnCode = mUnpivoter.ErrorCode
+                            intReturnCode = unpivoter.ErrorCode
                         End If
                     Else
-                        If mUnpivoter.ProcessFilesWildcard(mInputFilePath, mOutputFolderName, mParameterFilePath) Then
+                        If unpivoter.ProcessFilesWildcard(mInputFilePath, mOutputFolderName, mParameterFilePath) Then
                             intReturnCode = 0
                         Else
-                            intReturnCode = mUnpivoter.ErrorCode
+                            intReturnCode = unpivoter.ErrorCode
                             If intReturnCode <> 0 Then
-                                ConsoleMsgUtils.ShowWarning("Error while processing: " & mUnpivoter.GetErrorMessage())
+                                ConsoleMsgUtils.ShowWarning("Error while processing: " & unpivoter.GetErrorMessage())
                             End If
                         End If
                     End If
@@ -154,7 +155,6 @@ Public Module modMain
         Return intReturnCode
 
     End Function
-
 
     Private Function SetOptionsUsingCommandLineParameters(objParseCommandLine As clsParseCommandLine) As Boolean
         ' Returns True if no problems; otherwise, returns false
@@ -289,7 +289,7 @@ Public Module modMain
 
     End Sub
 
-    Private Sub mUnpivoter_ProgressChanged(taskDescription As String, percentComplete As Single) Handles mUnpivoter.ProgressUpdate
+    Private Sub Unpivoter_ProgressChanged(taskDescription As String, percentComplete As Single)
         Const PERCENT_REPORT_INTERVAL = 25
         Const PROGRESS_DOT_INTERVAL_MSEC = 250
 
@@ -308,7 +308,7 @@ Public Module modMain
         End If
     End Sub
 
-    Private Sub mUnpivoter_ProgressReset() Handles mUnpivoter.ProgressReset
+    Private Sub Unpivoter_ProgressReset()
         mLastProgressReportTime = DateTime.UtcNow
         mLastProgressReportValue = 0
     End Sub
