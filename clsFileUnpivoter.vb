@@ -245,8 +245,8 @@ Public Class FileUnpivoter
     End Function
 
     ' Main processing function
-    Public Overloads Overrides Function ProcessFile(inputFilePath As String, outputFolderPath As String, parameterFilePath As String, resetErrorCode As Boolean) As Boolean
-        ' Returns True if success, False if failure
+    ' Returns True if success, False if failure
+    Public Overloads Overrides Function ProcessFile(inputFilePath As String, outputDirectoryPath As String, parameterFilePath As String, resetErrorCode As Boolean) As Boolean
 
         Dim statusMessage As String
         Dim success As Boolean
@@ -270,8 +270,8 @@ Public Class FileUnpivoter
                 ShowErrorMessage("Input file name is empty")
                 MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.InvalidInputFilePath)
             Else
-                ' Note that CleanupFilePaths() will update mOutputFolderPath, which is used by LogMessage()
-                If Not CleanupFilePaths(inputFilePath, outputFolderPath) Then
+                ' Note that CleanupFilePaths() will update mOutputDirectoryPath, which is used by LogMessage()
+                If Not CleanupFilePaths(inputFilePath, outputDirectoryPath) Then
                     MyBase.SetBaseClassErrorCode(ProcessFilesErrorCodes.FilePathError)
                 Else
                     MyBase.UpdateProgress("Parsing " & Path.GetFileName(inputFilePath))
@@ -279,7 +279,7 @@ Public Class FileUnpivoter
                     MyBase.ResetProgress()
 
                     ' Call UnpivotFile to perform the work
-                    success = UnpivotFile(inputFilePath, outputFolderPath)
+                    success = UnpivotFile(inputFilePath, outputDirectoryPath)
 
                     If success Then
                         LogMessage("Processing Complete")
@@ -319,7 +319,7 @@ Public Class FileUnpivoter
 
     End Sub
 
-    Protected Function UnpivotFile(inputFilePath As String, outputFolderPath As String) As Boolean
+    Protected Function UnpivotFile(inputFilePath As String, outputDirectoryPath As String) As Boolean
 
         Dim reader As StreamReader
         Dim writer As StreamWriter
@@ -349,10 +349,10 @@ Public Class FileUnpivoter
         Try
             outputFilePath = Path.GetFileNameWithoutExtension(inputFilePath) & "_Unpivot" & Path.GetExtension(inputFilePath)
 
-            If outputFolderPath Is Nothing OrElse outputFolderPath.Length = 0 Then
+            If outputDirectoryPath Is Nothing OrElse outputDirectoryPath.Length = 0 Then
                 outputFilePath = Path.Combine(Path.GetDirectoryName(inputFilePath), outputFilePath)
             Else
-                outputFilePath = Path.Combine(outputFolderPath, outputFilePath)
+                outputFilePath = Path.Combine(outputDirectoryPath, outputFilePath)
             End If
 
             Try

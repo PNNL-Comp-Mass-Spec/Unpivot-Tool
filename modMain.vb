@@ -10,7 +10,7 @@ Imports PRISM
 ' and writes out a new file where the data has been unpivotted
 '
 ' Example command Line
-' /I:DataFile.txt /F:FixedColumnCount /O:OutputFolderPath
+' /I:DataFile.txt /F:FixedColumnCount /O:OutputDirectoryPath
 
 ' -------------------------------------------------------------------------------
 ' Written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA)
@@ -39,7 +39,7 @@ Public Module modMain
     Public Const PROGRAM_DATE As String = "February 11, 2021"
 
     Private mInputFilePath As String
-    Private mOutputFolderName As String             ' Optional
+    Private mOutputDirectoryName As String          ' Optional
     Private mParameterFilePath As String            ' Optional; not used by clsFileUnpivoter
 
     Private mFixedColumnCount As Integer
@@ -48,11 +48,11 @@ Public Module modMain
     Private mTabDelimitedFile As Boolean
     Private mColumnSepChar As Char
 
-    Private mOutputFolderAlternatePath As String                ' Optional
-    Private mRecreateFolderHierarchyInAlternatePath As Boolean  ' Optional
+    Private mOutputDirectoryAlternatePath As String                ' Optional
+    Private mRecreateDirectoryHierarchyInAlternatePath As Boolean  ' Optional
 
-    Private mRecurseFolders As Boolean
-    Private mRecurseFoldersMaxLevels As Integer
+    Private mRecurseDirectories As Boolean
+    Private mRecurseDirectoriesMaxLevels As Integer
 
     Private mLogMessagesToFile As Boolean
 
@@ -78,7 +78,7 @@ Public Module modMain
 
         returnCode = 0
         mInputFilePath = String.Empty
-        mOutputFolderName = String.Empty
+        mOutputDirectoryName = String.Empty
         mParameterFilePath = String.Empty
 
         mFixedColumnCount = 1
@@ -88,11 +88,11 @@ Public Module modMain
         mTabDelimitedFile = True
         mColumnSepChar = ControlChars.Tab
 
-        mOutputFolderAlternatePath = String.Empty
-        mRecreateFolderHierarchyInAlternatePath = False
+        mOutputDirectoryAlternatePath = String.Empty
+        mRecreateDirectoryHierarchyInAlternatePath = False
 
-        mRecurseFolders = False
-        mRecurseFoldersMaxLevels = 0
+        mRecurseDirectories = False
+        mRecurseDirectoriesMaxLevels = 0
 
         mLogMessagesToFile = False
 
@@ -124,14 +124,14 @@ Public Module modMain
 
                     End With
 
-                    If mRecurseFolders Then
-                        If unpivoter.ProcessFilesAndRecurseDirectories(mInputFilePath, mOutputFolderName, mOutputFolderAlternatePath, mRecreateFolderHierarchyInAlternatePath, mParameterFilePath, mRecurseFoldersMaxLevels) Then
+                    If mRecurseDirectories Then
+                        If unpivoter.ProcessFilesAndRecurseDirectories(mInputFilePath, mOutputDirectoryName, mOutputDirectoryAlternatePath, mRecreateDirectoryHierarchyInAlternatePath, mParameterFilePath, mRecurseDirectoriesMaxLevels) Then
                             returnCode = 0
                         Else
                             returnCode = unpivoter.ErrorCode
                         End If
                     Else
-                        If unpivoter.ProcessFilesWildcard(mInputFilePath, mOutputFolderName, mParameterFilePath) Then
+                        If unpivoter.ProcessFilesWildcard(mInputFilePath, mOutputDirectoryName, mParameterFilePath) Then
                             returnCode = 0
                         Else
                             returnCode = unpivoter.ErrorCode
@@ -180,7 +180,7 @@ Public Module modMain
 
                     ' Query commandLineParser to see if various parameters are present
                     If .RetrieveValueForParameter("I", value) Then mInputFilePath = value
-                    If .RetrieveValueForParameter("O", value) Then mOutputFolderName = value
+                    If .RetrieveValueForParameter("O", value) Then mOutputDirectoryName = value
 
                     If .RetrieveValueForParameter("F", value) Then
                         If Integer.TryParse(value, result) Then
@@ -207,13 +207,13 @@ Public Module modMain
                     If .RetrieveValueForParameter("N", value) Then mSkipNullItems = True
 
                     If .RetrieveValueForParameter("S", value) Then
-                        mRecurseFolders = True
+                        mRecurseDirectories = True
                         If IsNumeric(value) Then
-                            mRecurseFoldersMaxLevels = CInt(value)
+                            mRecurseDirectoriesMaxLevels = CInt(value)
                         End If
                     End If
-                    If .RetrieveValueForParameter("A", value) Then mOutputFolderAlternatePath = value
-                    If .RetrieveValueForParameter("R", value) Then mRecreateFolderHierarchyInAlternatePath = True
+                    If .RetrieveValueForParameter("A", value) Then mOutputDirectoryAlternatePath = value
+                    If .RetrieveValueForParameter("R", value) Then mRecreateDirectoryHierarchyInAlternatePath = True
 
                     If .RetrieveValueForParameter("L", value) Then mLogMessagesToFile = True
 
@@ -235,13 +235,13 @@ Public Module modMain
             Console.WriteLine("This program reads in a delimited text file that is in crosstab (aka pivot table) format and writes out a new file where the data has been unpivotted.")
             Console.WriteLine()
             Console.WriteLine("Program syntax:" & ControlChars.NewLine & Path.GetFileName(Assembly.GetExecutingAssembly().Location) &
-                              " /I:InputFilePath [/O:OutputFolderName]")
+                              " /I:InputFilePath [/O:OutputDirectoryName]")
             Console.WriteLine(" [/F:FixedColumnCount] [/C:ColumnSepChar] [/B] [/N]")
-            Console.WriteLine(" [/S:[MaxLevel]] [/A:AlternateOutputFolderPath] [/R] [/L] [/Q]")
+            Console.WriteLine(" [/S:[MaxLevel]] [/A:AlternateOutputDirectoryPath] [/R] [/L] [/Q]")
             Console.WriteLine()
 
             Console.WriteLine("The input file path can contain the wildcard character *.  If a wildcard is present, then all matching files will be processed")
-            Console.WriteLine("The output folder name is optional.  If omitted, the output files will be created in the same folder as the input file.  If included, then a subfolder is created with the name OutputFolderName.")
+            Console.WriteLine("The output directory name is optional.  If omitted, the output files will be created in the same directory as the input file.  If included, then a subdirectory is created with the name OutputDirectoryName.")
             Console.WriteLine()
 
             Console.WriteLine("Use /F to define the number of fixed columns (default is /F:1).  When unpivotting, data in these columns will be written to every row in the output file.")
@@ -250,9 +250,9 @@ Public Module modMain
             Console.WriteLine("Use /N to skip writing Null values to the output file (as indicated by the word 'null').")
             Console.WriteLine()
 
-            Console.WriteLine("Use /S to process all valid files in the input folder and subfolders. Include a number after /S (like /S:2) to limit the level of subfolders to examine.")
+            Console.WriteLine("Use /S to process all valid files in the input directory and subdirectories. Include a number after /S (like /S:2) to limit the level of subdirectories to examine.")
             Console.WriteLine("When using /S, you can redirect the output of the results using /A.")
-            Console.WriteLine("When using /S, you can use /R to re-create the input folder hierarchy in the alternate output folder (if defined).")
+            Console.WriteLine("When using /S, you can use /R to re-create the input directory hierarchy in the alternate output directory (if defined).")
             Console.WriteLine()
             Console.WriteLine("Use /L to log messages to a file.  Use the optional /Q switch will suppress all error messages.")
             Console.WriteLine()
